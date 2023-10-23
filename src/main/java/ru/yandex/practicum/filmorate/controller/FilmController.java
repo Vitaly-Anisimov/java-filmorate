@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.controller.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -13,7 +14,11 @@ import java.util.List;
 @Validated
 @Slf4j
 public class FilmController {
-    private final FilmService filmService = new FilmService();
+    private final FilmService filmService;
+
+    public FilmController() {
+        filmService = new FilmService();
+    }
 
     @GetMapping
     public List<Film> getFilms() {
@@ -30,6 +35,9 @@ public class FilmController {
     @PutMapping
     public Film updateFilm(@Validated @RequestBody Film film) {
         log.info("Request updateFilm {}", film);
+        if (film.getId() == null) {
+            throw new ValidationException("Film with empty Id");
+        }
         return filmService.updateFilm(film);
     }
 

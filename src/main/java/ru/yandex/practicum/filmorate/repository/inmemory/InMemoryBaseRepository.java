@@ -1,20 +1,24 @@
 package ru.yandex.practicum.filmorate.repository.inmemory;
 
-import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.BaseUnit;
 import ru.yandex.practicum.filmorate.repository.InMemoryRepository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Repository
-@NoArgsConstructor
 public class InMemoryBaseRepository<T extends BaseUnit> implements InMemoryRepository<T> {
+    private final Map<Long, T> inMemoryMap;
+    private long idValue;
 
-    private final Map<Long, T> inMemoryMap = new HashMap<>();
+    public InMemoryBaseRepository() {
+        this.inMemoryMap = new LinkedHashMap<>();
+        this.idValue = 0;
+    }
+
+    private long getNextValueSequince() {
+        return ++idValue;
+    }
 
     @Override
     public T getById(long id) {
@@ -27,8 +31,17 @@ public class InMemoryBaseRepository<T extends BaseUnit> implements InMemoryRepos
     }
 
     @Override
-    public void add(T baseUnit) {
+    public T save(T baseUnit) {
+        if (baseUnit.getId() == null) {
+            baseUnit.setId(getNextValueSequince());
+        }
+
         inMemoryMap.put(baseUnit.getId(), baseUnit);
+        return baseUnit;
     }
 
+    @Override
+    public void deleteById(long id) {
+        inMemoryMap.remove(id);
+    }
 }

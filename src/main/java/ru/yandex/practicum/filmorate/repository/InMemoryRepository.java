@@ -8,5 +8,7 @@ public interface InMemoryRepository<T extends BaseUnit> {
 
     public List<T> getAll();
 
-    public void add(T baseUnit);
+    public T save(T baseUnit);
+
+    public void deleteById(long id);
 }

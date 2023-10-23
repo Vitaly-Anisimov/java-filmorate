@@ -1,27 +1,22 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.InMemoryRepository;
 import ru.yandex.practicum.filmorate.repository.inmemory.InMemoryBaseRepository;
 import ru.yandex.practicum.filmorate.repository.inmemory.exception.NotFoundException;
-
 import java.util.List;
 
 @Service
-@NoArgsConstructor
 public class FilmService {
-    private InMemoryRepository filmRepository = new InMemoryBaseRepository<Film>();
-    private long idValue = 0;
+    private final InMemoryRepository filmRepository;
 
-    private long getNextValueSequince() {
-        return ++idValue;
+    public FilmService() {
+        filmRepository = new InMemoryBaseRepository<Film>();
     }
 
     public Film addFilm(Film film) {
-        film.setId(getNextValueSequince());
-        filmRepository.add(film);
+        filmRepository.save(film);
         return film;
     }
 
@@ -32,12 +27,10 @@ public class FilmService {
             throw new NotFoundException("Not found with id =" + film.getId());
         }
 
-        oldFilm.setDescription(film.getDescription());
-        oldFilm.setName(film.getName());
-        oldFilm.setDuration(film.getDuration());
-        oldFilm.setReleaseDate(film.getReleaseDate());
+        filmRepository.deleteById(film.getId());
+        filmRepository.save(film);
 
-        return oldFilm;
+        return (Film) filmRepository.save(film);
     }
 
     public List<Film> getAllFilms() {

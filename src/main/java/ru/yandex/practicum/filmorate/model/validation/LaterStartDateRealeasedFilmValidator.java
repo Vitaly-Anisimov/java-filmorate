@@ -1,5 +1,4 @@
 package ru.yandex.practicum.filmorate.model.validation;
-//https://www.baeldung.com/javax-validation-method-constraints
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.time.LocalDate;
@@ -10,10 +9,10 @@ public class LaterStartDateRealeasedFilmValidator
 
     @Override
     public boolean isValid(LocalDate value, ConstraintValidatorContext context) {
-        if (value != null) {
-            return value.isAfter(START_DATE);
+        if (value == null) {
+            return false;
         }
 
-        return false;
+        return value.isAfter(START_DATE);
     }
 }
