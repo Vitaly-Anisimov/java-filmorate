@@ -4,8 +4,6 @@ import lombok.*;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -22,6 +20,4 @@ public class User extends BaseUnit {
     private String name;
     @PastOrPresent
     private LocalDate birthday;
-    @Builder.Default
-    private Set<Long> friends = new HashSet<>();
 }

@@ -1,19 +1,23 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.controller.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private static final String NDF_MESS = "Not found user with id = ";
     private final UserStorage userStorage;
+    private final FriendStorage friendStorage;
 
     private boolean isNameEmpty(String name) {
         return name == null || name.isBlank() || name.isEmpty();
@@ -30,12 +34,11 @@ public class UserService {
     }
 
     private void addFriend(User user, User friendUser) {
-        user.getFriends().add(friendUser.getId());
-        userStorage.save(user);
+        friendStorage.save(user.getId(), friendUser.getId());
     }
 
     private void deleteFriend(User user, User friendUser) {
-        user.getFriends().remove(friendUser.getId());
+        friendStorage.delete(user.getId(), friendUser.getId());
     }
 
     public User addUser(User user) {
@@ -43,7 +46,11 @@ public class UserService {
             user.setName(user.getLogin());
         }
 
-        return userStorage.save(user);
+        userStorage.save(user);
+        friendStorage.save(user.getId(), null);
+
+        log.info("Added user {}", user.getId());
+        return user;
     }
 
     public User updateUser(User user) {
@@ -54,35 +61,44 @@ public class UserService {
         }
 
         userStorage.save(user);
-
+        log.info("Updated user {}", user.getId());
         return user;
     }
 
     public List<User> getAllUsers() {
-        return userStorage.getAll();
+        List<User> allUsers = userStorage.getAll();
+
+        log.info("Get All users {}", allUsers);
+        return allUsers;
     }
 
     public User getUserById(Long id) {
-        return getAndCheckUser(id);
+        User foundedUser = getAndCheckUser(id);
+
+        log.info("Founded user {}", foundedUser);
+        return foundedUser;
     }
 
     public List<User> getAllUserFriends(Long id) {
         User user = getAndCheckUser(id);
-
-        return user.getFriends()
+        List<User> foundedFriends = friendStorage.getFriendsByUserId(user.getId())
                 .stream()
-                .map(friendId -> userStorage.getById(friendId))
+                .map(friend -> userStorage.getById(friend))
                 .collect(Collectors.toList());
+
+        log.info("Founded friends {}", foundedFriends);
+        return foundedFriends;
     }
 
-    public List<User> getCommonFriends(Long parentId, Long priorId) {
-        User userParent = getAndCheckUser(parentId);
-        User userPrior = getAndCheckUser(priorId);
-
-        return userParent.getFriends().stream()
-                .filter(friendId -> userPrior.getFriends().contains(friendId))
-                .map(friendId -> userStorage.getById(friendId))
+    public List<User> getCommonFriends(Long userId, Long friendId) {
+        User userParent = getAndCheckUser(userId);
+        User userPrior = getAndCheckUser(friendId);
+        List<User> foundedCommonFriends = friendStorage.getCommonFriends(userParent.getId(), userPrior.getId()).stream()
+                .map(foundedFriend -> userStorage.getById(foundedFriend))
                 .collect(Collectors.toList());
+
+        log.info("Founded common friends {}", foundedCommonFriends);
+        return foundedCommonFriends;
     }
 
     public void addToFriendUsers(Long id, Long friendId) {
@@ -91,6 +107,7 @@ public class UserService {
 
         addFriend(user, friendUser);
         addFriend(friendUser, user);
+        log.info("Added friend {} and {}", id, friendId);
     }
 
     public void deleteFromFriendUsers(Long id, Long friendId) {
@@ -99,5 +116,6 @@ public class UserService {
 
         deleteFriend(user, friendUser);
         deleteFriend(friendUser, user);
+        log.info("Deleted friend {} and {}", id, friendId);
     }
 }

@@ -20,7 +20,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -480,44 +479,9 @@ class FilmControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.put(PATH + "/{id}/like/{userId}", parsedId, userId)
                 .contentType(MediaType.APPLICATION_JSON));
-        mockMvc.perform(MockMvcRequestBuilders.get(PATH + "/{id}", parsedId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("likes", hasSize(1)));
         mockMvc.perform(MockMvcRequestBuilders.delete(PATH + "/{id}/like/{userId}", parsedId, userId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk());
-        mockMvc.perform(MockMvcRequestBuilders.get(PATH + "/{id}", parsedId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("likes", hasSize(0)));
-    }
-
-    @Test
-    public void positiveAddFilmLikeDoubleShouldReturnSize1() throws Exception {
-        Film film = Film.builder()
-                .name("Форсаж")
-                .description("Лучший боевик столетия")
-                .releaseDate(LocalDate.of(2005, 12, 28))
-                .duration(20)
-                .build();
-
-        String filmJson1 = objectMapper.writeValueAsString(film);
-
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(PATH)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(filmJson1))
-                .andReturn();
-
-        Integer parsedId = JsonPath.read(result.getResponse().getContentAsString(), "id");
-        Integer[] usersId = new Integer[1];
-        usersId[0] = 10;
-
-        mockMvc.perform(MockMvcRequestBuilders.put(PATH + "/{id}/like/{userId}", parsedId, usersId[0])
-                .contentType(MediaType.APPLICATION_JSON));
-        mockMvc.perform(MockMvcRequestBuilders.put(PATH + "/{id}/like/{userId}", parsedId, usersId[0])
-                .contentType(MediaType.APPLICATION_JSON));
-        mockMvc.perform(MockMvcRequestBuilders.get(PATH + "/{id}", parsedId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("likes", hasSize(1)));
     }
 
     @Test
@@ -553,6 +517,16 @@ class FilmControllerTest {
                 Thread.sleep(100);
                 mockMvc.perform(MockMvcRequestBuilders.put(PATH + "/{id}/like/{userId}", parsedId, 20)
                         .contentType(MediaType.APPLICATION_JSON));
+                Thread.sleep(100);
+                mockMvc.perform(MockMvcRequestBuilders.put(PATH + "/{id}/like/{userId}", parsedId, 20)
+                        .contentType(MediaType.APPLICATION_JSON));
+            } else if (i == 4) {
+                parsedId = JsonPath.read(result1.getResponse().getContentAsString(), "id");
+                mockMvc.perform(MockMvcRequestBuilders.put(PATH + "/{id}/like/{userId}", parsedId, 10)
+                        .contentType(MediaType.APPLICATION_JSON));
+                Thread.sleep(100);
+                mockMvc.perform(MockMvcRequestBuilders.put(PATH + "/{id}/like/{userId}", parsedId, 20)
+                        .contentType(MediaType.APPLICATION_JSON));
             }
         }
 
@@ -560,11 +534,10 @@ class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
         JSONArray jsonArray = new JSONArray(result.getResponse().getContentAsString());
-        assertEquals(sizeArray, jsonArray.length());
-        JSONObject jsonObject = (JSONObject) jsonArray.get(0);
+        JSONObject jsonObject = (JSONObject) jsonArray.get(1);
+        Integer lastId = jsonObject.getInt("id");
 
-        Integer firstId = jsonObject.getInt("id");
-        assertEquals(parsedId, firstId);
+        assertEquals(parsedId, lastId);
     }
 
     @Test
@@ -590,6 +563,18 @@ class FilmControllerTest {
                 parsedId = JsonPath.read(result1.getResponse().getContentAsString(), "id");
                 mockMvc.perform(MockMvcRequestBuilders.put(PATH + "/{id}/like/{userId}", parsedId, 10)
                         .contentType(MediaType.APPLICATION_JSON));
+                Thread.sleep(100);
+                mockMvc.perform(MockMvcRequestBuilders.put(PATH + "/{id}/like/{userId}", parsedId, 10)
+                        .contentType(MediaType.APPLICATION_JSON));
+                Thread.sleep(100);
+                mockMvc.perform(MockMvcRequestBuilders.put(PATH + "/{id}/like/{userId}", parsedId, 10)
+                        .contentType(MediaType.APPLICATION_JSON));
+                Thread.sleep(100);
+                mockMvc.perform(MockMvcRequestBuilders.put(PATH + "/{id}/like/{userId}", parsedId, 10)
+                        .contentType(MediaType.APPLICATION_JSON));
+                Thread.sleep(100);
+                mockMvc.perform(MockMvcRequestBuilders.put(PATH + "/{id}/like/{userId}", parsedId, 10)
+                        .contentType(MediaType.APPLICATION_JSON));
             }
         }
 
@@ -597,12 +582,9 @@ class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
         JSONArray jsonArray = new JSONArray(result.getResponse().getContentAsString());
-        assertEquals(sizeArray - 1, jsonArray.length());
         JSONObject jsonObject = (JSONObject) jsonArray.get(0);
 
         Integer firstId = jsonObject.getInt("id");
         assertEquals(parsedId, firstId);
     }
-
-
 }

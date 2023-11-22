@@ -20,7 +20,6 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -403,12 +402,6 @@ class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.put(PATH + "/{id}/friends/{otherId}", parsedId2, parsedId1)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk());
-        mockMvc.perform(MockMvcRequestBuilders.get(PATH + "/{id}", parsedId1)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("friends", hasSize(1)));
-        mockMvc.perform(MockMvcRequestBuilders.get(PATH + "/{id}", parsedId2)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("friends", hasSize(1)));
     }
 
     @Test
@@ -469,12 +462,6 @@ class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete(PATH + "/{id}/friends/{otherId}", parsedId2, parsedId1)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk());
-        mockMvc.perform(MockMvcRequestBuilders.get(PATH + "/{id}", parsedId1)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("friends", hasSize(0)));
-        mockMvc.perform(MockMvcRequestBuilders.get(PATH + "/{id}", parsedId2)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("friends", hasSize(0)));
     }
 
     @Test
@@ -532,7 +519,7 @@ class UserControllerTest {
         Integer parsedId2 = JsonPath.read(result2.getResponse().getContentAsString(), "id");
         MvcResult result3 = mockMvc.perform(MockMvcRequestBuilders.post(PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(userJson2))
+                        .content(userJson3))
                 .andReturn();
         Integer parsedId3 = JsonPath.read(result3.getResponse().getContentAsString(), "id");
 

@@ -9,7 +9,7 @@ public interface FilmStorage {
 
     List<Film> getAll();
 
-    Film save(Film baseUnit);
+    Film save(Film film);
 
     void deleteById(long id);
 }
