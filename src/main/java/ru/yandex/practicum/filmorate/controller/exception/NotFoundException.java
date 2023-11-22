@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.repository.inmemory.exception;
+package ru.yandex.practicum.filmorate.controller.exception;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String mess) {
